@@ -33,8 +33,8 @@ class LoginFragment : DaggerFragment() {
         login_button.callback = object : Callback<TwitterSession>() {
 
             override fun success(result: Result<TwitterSession>) {
-                activity.fragmentManager.beginTransaction().replace(R.id.container, TimeLineFragment()).addToBackStack(null).commit()
                 twitterHelper.setCurrentActiveSession(result.data)
+                activity.fragmentManager.beginTransaction().replace(R.id.container, TimeLineFragment()).addToBackStack(null).commit()
             }
 
             override fun failure(exception: TwitterException) {

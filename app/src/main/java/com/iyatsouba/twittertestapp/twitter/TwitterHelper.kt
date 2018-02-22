@@ -17,26 +17,27 @@ class TwitterHelper {
                         "fRcxj6Haw9ahUKczAe4BtKMdQU5FSOIo80orLgFikNIMmySi2S"))
                 .debug(true)
                 .build()
-
         Twitter.initialize(config)
 
-        val customClient = buildCustomOkHttpClient()
         val activeSession = TwitterCore.getInstance().sessionManager.activeSession
 
-        val customApiClient: TwitterApiClient
         if (activeSession != null) {
-            customApiClient = TwitterApiClient(activeSession, customClient)
-            TwitterCore.getInstance().addApiClient(activeSession, customApiClient)
+            setCurrentActiveSession(activeSession)
         } else {
-            customApiClient = TwitterApiClient(customClient)
+            val customApiClient = TwitterApiClient(buildCustomOkHttpClient())
             TwitterCore.getInstance().addGuestApiClient(customApiClient)
+            this.apiClient = customApiClient
         }
-        this.apiClient = customApiClient
     }
 
     fun setCurrentActiveSession(twitterSession: TwitterSession) {
         this.twitterSession = twitterSession
         this.apiClient = TwitterApiClient(twitterSession, buildCustomOkHttpClient())
+        TwitterCore.getInstance().addApiClient(twitterSession, apiClient)
+    }
+
+    fun isUserLoggedIn(): Boolean {
+        return twitterSession != null
     }
 
     fun getCurrentActiveSession(): TwitterSession? {
@@ -46,6 +47,10 @@ class TwitterHelper {
     fun getUserName(): String {
         return twitterSession?.userName ?: ""
     }
+    fun getUserId(): Long {
+        return twitterSession?.userId ?: 0
+    }
+
 
     private fun buildCustomOkHttpClient(): OkHttpClient {
         return OkHttpClient.Builder().build()
