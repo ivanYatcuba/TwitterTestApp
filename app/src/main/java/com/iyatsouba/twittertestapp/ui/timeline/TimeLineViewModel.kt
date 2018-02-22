@@ -1,4 +1,6 @@
 package com.iyatsouba.twittertestapp.ui.timeline
 
-class TimeLineViewModel {
+import com.iyatsouba.twittertestapp.repository.TweetRepository
+
+class TimeLineViewModel(val twitterRepository: TweetRepository) {
 }

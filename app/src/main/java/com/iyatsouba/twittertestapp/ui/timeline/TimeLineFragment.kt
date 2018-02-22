@@ -33,7 +33,7 @@ class TimeLineFragment : DaggerFragment() {
 
         val searchTimeline = UserTimeline.Builder()
                 .userId(twitterHelper.getUserId())
-                .maxItemsPerRequest(50)
+                .maxItemsPerRequest(1)
                 .build()
 
         val adapter = TweetTimelineRecyclerViewAdapter.Builder(activity)
