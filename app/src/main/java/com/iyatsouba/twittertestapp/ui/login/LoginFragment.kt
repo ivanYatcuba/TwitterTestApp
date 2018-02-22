@@ -1,11 +1,18 @@
 package com.iyatsouba.twittertestapp.ui.login
 
+import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import com.iyatsouba.twittertestapp.R
+import com.iyatsouba.twittertestapp.twitter.TwitterHelper
+import com.iyatsouba.twittertestapp.ui.feed.FeedFragment
+import com.twitter.sdk.android.core.Callback
+import com.twitter.sdk.android.core.Result
+import com.twitter.sdk.android.core.TwitterException
+import com.twitter.sdk.android.core.TwitterSession
 import dagger.android.DaggerFragment
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.login_fragment.*
@@ -16,26 +23,28 @@ class LoginFragment : DaggerFragment() {
     private val compositeDisposable by lazy { CompositeDisposable() }
 
     @Inject lateinit var loginViewModel: LoginViewModel
+    @Inject lateinit var twitterHelper: TwitterHelper
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {
         return inflater?.inflate(R.layout.login_fragment, container, false)!!
     }
 
-    override fun onStart() {
-        super.onStart()
-        compositeDisposable.add(loginViewModel.showDataFromApi()
-                .subscribe({
-                    Log.d("DI", it)
-                    testText.text = it
-                }, {
-                    Log.d("DI", it.message)
-                }))
+    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+        login_button.callback = object : Callback<TwitterSession>() {
+
+            override fun success(result: Result<TwitterSession>) {
+                activity.fragmentManager.beginTransaction().replace(R.id.container, FeedFragment()).addToBackStack(null).commit()
+                twitterHelper.setCurrentActiveSession(result.data)
+            }
+
+            override fun failure(exception: TwitterException) {
+                Toast.makeText(activity, "Fail", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
-    override fun onStop() {
-        super.onStop()
-        compositeDisposable.clear()
-        compositeDisposable.dispose()
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+        super.onActivityResult(requestCode, resultCode, data)
+        login_button.onActivityResult(requestCode, resultCode, data)
     }
-
 }
