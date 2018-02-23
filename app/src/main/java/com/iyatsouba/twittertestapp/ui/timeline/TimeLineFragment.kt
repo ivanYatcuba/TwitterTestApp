@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.iyatsouba.twittertestapp.R
+import com.iyatsouba.twittertestapp.ui.publish.PublishStatusFragment
 import com.twitter.sdk.android.core.Callback
 import com.twitter.sdk.android.core.Result
 import com.twitter.sdk.android.core.TwitterException
@@ -36,6 +37,10 @@ class TimeLineFragment : DaggerFragment() {
                 .build()
 
         user_timeline.adapter = adapter
+
+        add_new_tweet.setOnClickListener({
+            activity.fragmentManager.beginTransaction().replace(R.id.container, PublishStatusFragment()).addToBackStack(null).commit()
+        })
 
         refresh_timeline.setOnRefreshListener({
             refresh_timeline.isRefreshing = true
