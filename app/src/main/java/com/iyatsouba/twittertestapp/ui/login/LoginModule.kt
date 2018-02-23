@@ -1,6 +1,5 @@
 package com.iyatsouba.twittertestapp.ui.login
 
-import com.iyatsouba.twittertestapp.repository.UserRepository
 import dagger.Module
 import dagger.Provides
 
@@ -8,6 +7,6 @@ import dagger.Provides
 class LoginModule {
 
     @Provides
-    fun provideViewModel(userRepository: UserRepository) = LoginViewModel(userRepository)
+    fun provideViewModel() = LoginViewModel()
 
 }

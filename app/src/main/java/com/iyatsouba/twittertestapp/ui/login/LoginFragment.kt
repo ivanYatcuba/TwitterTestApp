@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import com.iyatsouba.twittertestapp.R
 import com.iyatsouba.twittertestapp.twitter.TwitterHelper
-import com.iyatsouba.twittertestapp.ui.feed.FeedFragment
+import com.iyatsouba.twittertestapp.ui.timeline.TimeLineFragment
 import com.twitter.sdk.android.core.Callback
 import com.twitter.sdk.android.core.Result
 import com.twitter.sdk.android.core.TwitterException
@@ -33,8 +33,8 @@ class LoginFragment : DaggerFragment() {
         login_button.callback = object : Callback<TwitterSession>() {
 
             override fun success(result: Result<TwitterSession>) {
-                activity.fragmentManager.beginTransaction().replace(R.id.container, FeedFragment()).addToBackStack(null).commit()
                 twitterHelper.setCurrentActiveSession(result.data)
+                activity.fragmentManager.beginTransaction().replace(R.id.container, TimeLineFragment()).addToBackStack(null).commit()
             }
 
             override fun failure(exception: TwitterException) {
