@@ -6,14 +6,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.iyatsouba.twittertestapp.R
-import com.iyatsouba.twittertestapp.twitter.TwitterHelper
 import com.twitter.sdk.android.core.Callback
 import com.twitter.sdk.android.core.Result
 import com.twitter.sdk.android.core.TwitterException
 import com.twitter.sdk.android.core.models.Tweet
 import com.twitter.sdk.android.tweetui.TimelineResult
 import com.twitter.sdk.android.tweetui.TweetTimelineRecyclerViewAdapter
-import com.twitter.sdk.android.tweetui.UserTimeline
 import dagger.android.DaggerFragment
 import kotlinx.android.synthetic.main.user_timeline_fragment.*
 import javax.inject.Inject
@@ -21,7 +19,7 @@ import javax.inject.Inject
 
 class TimeLineFragment : DaggerFragment() {
 
-    @Inject lateinit var twitterHelper: TwitterHelper
+    @Inject lateinit var timeLineViewModel: TimeLineViewModel
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {
         return inflater?.inflate(R.layout.user_timeline_fragment, container, false)!!
@@ -31,13 +29,9 @@ class TimeLineFragment : DaggerFragment() {
         super.onViewCreated(view, savedInstanceState)
         user_timeline.layoutManager = LinearLayoutManager(activity)
 
-        val searchTimeline = UserTimeline.Builder()
-                .userId(twitterHelper.getUserId())
-                .maxItemsPerRequest(1)
-                .build()
 
         val adapter = TweetTimelineRecyclerViewAdapter.Builder(activity)
-                .setTimeline(searchTimeline)
+                .setTimeline(timeLineViewModel.getTweetTimeline())
                 .setViewStyle(R.style.tw__TweetDarkWithActionsStyle)
                 .build()
 

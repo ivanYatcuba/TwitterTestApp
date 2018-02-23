@@ -1,5 +1,6 @@
 package com.iyatsouba.twittertestapp.di
 
+import android.app.Application
 import android.arch.persistence.room.Room
 import android.content.Context
 import com.iyatsouba.twittertestapp.db.TwitterTestAppDatabse
@@ -10,8 +11,14 @@ import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
 
+
 @Module
 class AppModule {
+
+    @Provides
+    fun provideContext(application: Application): Context {
+        return application.applicationContext
+    }
 
     @Provides
     @Singleton
