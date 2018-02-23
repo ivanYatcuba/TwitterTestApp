@@ -8,9 +8,6 @@ import io.reactivex.Maybe
 @Dao
 interface LocalTweetDao {
 
-    @Query("select * from tweets where userId = :userId")
-    fun findTweetsByUserId(userId: Long): List<LocalTweet>
-
     @Query("select * from tweets where userId = :userId AND tweeterId < :maxId ORDER BY tweeterId DESC  LIMIT :limit")
     fun getPreviousTweets(userId: Long, maxId: Long, limit: Int): Maybe<List<LocalTweet>>
 

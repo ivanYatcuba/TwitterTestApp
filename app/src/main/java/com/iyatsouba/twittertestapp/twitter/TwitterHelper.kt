@@ -40,6 +40,10 @@ class TwitterHelper {
         return twitterSession != null
     }
 
+    fun getApiClient(): TwitterApiClient? {
+        return apiClient
+    }
+
     fun getCurrentActiveSession(): TwitterSession? {
         return twitterSession
     }
@@ -47,6 +51,7 @@ class TwitterHelper {
     fun getUserName(): String {
         return twitterSession?.userName ?: ""
     }
+
     fun getUserId(): Long {
         return twitterSession?.userId ?: 0
     }
