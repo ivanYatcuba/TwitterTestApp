@@ -42,7 +42,7 @@ class PublishStatusFragment : DaggerFragment() {
                 DataLoadingState.ERROR -> {
                     publish.isEnabled = true
                     publishing_progress.visibility = GONE
-                    Toast.makeText(activity, "Error publishing status!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(activity, getString(R.string.error_publishing_status), Toast.LENGTH_SHORT).show()
                 }
                 DataLoadingState.IN_PROGRESS -> {
                     publish.isEnabled = false

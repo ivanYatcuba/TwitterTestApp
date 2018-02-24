@@ -18,7 +18,7 @@ class TweetRepository @Inject constructor (private val twitterHelper: TwitterHel
 
     fun getTweetTimeline(): LocalTweetTimeline {
         return LocalTweetTimeline.Builder().userId(twitterHelper.getUserId())
-                .maxItemsPerRequest(1)
+                .maxItemsPerRequest(5)
                 .tweetRepository(this)
                 .build()
     }

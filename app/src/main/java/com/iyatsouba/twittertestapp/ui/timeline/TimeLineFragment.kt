@@ -5,6 +5,8 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
@@ -31,6 +33,7 @@ class TimeLineFragment : DaggerFragment() {
 
     private var disposableDataLoadingState: Disposable? = null
     private var currentTimeline: LocalTweetTimeline? = null
+    private var adapter: TweetTimelineRecyclerViewAdapter? = null
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {
         return inflater?.inflate(R.layout.user_timeline_fragment, container, false)!!
@@ -43,12 +46,13 @@ class TimeLineFragment : DaggerFragment() {
                 ?.text = timeLineViewModel.getUsername()
 
         currentTimeline = timeLineViewModel.getTweetTimeline()
-        user_timeline.layoutManager = LinearLayoutManager(activity)
-        val adapter = TweetTimelineRecyclerViewAdapter.Builder(activity)
+
+        adapter = TweetTimelineRecyclerViewAdapter.Builder(activity)
                 .setTimeline(currentTimeline)
                 .setViewStyle(R.style.tw__TweetLightWithActionsStyle)
                 .build()
 
+        user_timeline.layoutManager = LinearLayoutManager(activity)
         user_timeline.adapter = adapter
 
         add_new_tweet.setOnClickListener({
@@ -57,14 +61,15 @@ class TimeLineFragment : DaggerFragment() {
 
         refresh_timeline.setOnRefreshListener({
             refresh_timeline.isRefreshing = true
-            adapter.refresh(object : Callback<TimelineResult<Tweet>>() {
+            adapter?.refresh(object : Callback<TimelineResult<Tweet>>() {
 
                 override fun success(result: Result<TimelineResult<Tweet>>) {
                     refresh_timeline.isRefreshing = false
+                    showEmptyPlaceholder(adapter?.itemCount == 0)
                 }
 
                 override fun failure(exception: TwitterException) {
-                    Toast.makeText(activity, "Error publishing status!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(activity, getString(R.string.error_loading_tweets), Toast.LENGTH_SHORT).show()
                 }
             })
         })
@@ -74,8 +79,18 @@ class TimeLineFragment : DaggerFragment() {
         super.onStart()
         disposableDataLoadingState = currentTimeline?.subscribeForLoadingState(Consumer {
             when(it) {
-                DataLoadingState.IN_PROGRESS -> { refresh_timeline.isRefreshing = true }
-                DataLoadingState.SUCCESS -> { refresh_timeline.isRefreshing = false }
+                DataLoadingState.IN_PROGRESS -> {
+                    if(!refresh_timeline.isRefreshing) {
+                        refresh_timeline.isRefreshing = true
+                    }
+                }
+                DataLoadingState.SUCCESS -> {
+                    refresh_timeline.isRefreshing = false
+                    showEmptyPlaceholder(adapter?.itemCount == 0)
+                }
+                DataLoadingState.ERROR -> {
+                    Toast.makeText(activity, getString(R.string.error_loading_tweets), Toast.LENGTH_SHORT).show()
+                }
             }
         })
     }
@@ -83,5 +98,13 @@ class TimeLineFragment : DaggerFragment() {
     override fun onStop() {
         super.onStop()
         disposableDataLoadingState?.dispose()
+    }
+
+    private fun showEmptyPlaceholder(show: Boolean) {
+        if(show) {
+            data_empty_placeholder.visibility = VISIBLE
+        } else {
+            data_empty_placeholder.visibility = GONE
+        }
     }
 }

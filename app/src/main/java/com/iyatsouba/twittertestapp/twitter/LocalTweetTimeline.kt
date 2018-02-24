@@ -25,7 +25,7 @@ class LocalTweetTimeline(private val userId: Long,
                          private val maxItemsPerRequest: Int,
                          private val tweetRepository: TweetRepository) : Timeline<Tweet> {
 
-    internal val networkStateRelay = BehaviorRelay.create<DataLoadingState>()
+    private val networkStateRelay = BehaviorRelay.create<DataLoadingState>()
     private val networkStateRelayObservable = networkStateRelay.share()
 
     fun subscribeForLoadingState(consumer: Consumer<DataLoadingState>): Disposable {
@@ -45,7 +45,7 @@ class LocalTweetTimeline(private val userId: Long,
                     tweetRepository.createUserTimelineRequest(maxItemsPerRequest, lastMaxTweetId, null)
                             ?.enqueue(UserTimelineRequestCallback(localTweets, cb))
                 }, {
-                    Log.d("TIMELINE_NEXT", Log.getStackTraceString(it))
+                    dispatchErrorOnMainThread()
                 })
 
     }
@@ -56,15 +56,15 @@ class LocalTweetTimeline(private val userId: Long,
                 tweetRepository.getPreviousTweets(maxId ?: Long.MAX_VALUE, maxItemsPerRequest)
                         .subscribeOn(Schedulers.io())
                         .observeOn(Schedulers.io()))
-                .subscribe({ localTweets ->
-                        Log.d("TIMELINE_PREV", "FOUND LOCAL TWEETS:" + localTweets.size)
-                        val lastMaxTweetId = if (localTweets.isEmpty()) null
-                            else localTweets.maxBy { tweet -> tweet.id }?.id
-                        tweetRepository.createUserTimelineRequest(maxItemsPerRequest,
-                                lastMaxTweetId, decrementMaxId(maxId))
-                                ?.enqueue(UserTimelineRequestCallback(localTweets, cb))
+                        .subscribe({ localTweets ->
+                            Log.d("TIMELINE_PREV", "FOUND LOCAL TWEETS:" + localTweets.size)
+                            val lastMaxTweetId = if (localTweets.isEmpty()) null
+                                else localTweets.maxBy { tweet -> tweet.id }?.id
+                            tweetRepository.createUserTimelineRequest(maxItemsPerRequest,
+                                    lastMaxTweetId, decrementMaxId(maxId))
+                                    ?.enqueue(UserTimelineRequestCallback(localTweets, cb))
                 }, {
-                    Log.d("TIMELINE_PREV", Log.getStackTraceString(it))
+                    dispatchErrorOnMainThread()
                 })
     }
 
@@ -75,10 +75,17 @@ class LocalTweetTimeline(private val userId: Long,
         })
     }
 
+    private fun dispatchErrorOnMainThread() {
+        networkStateRelay.accept(DataLoadingState.ERROR)
+    }
+
     private fun dispatchSuccessfulTimelineInMainThread(tweets: List<Tweet>,
                                                        cb: Callback<TimelineResult<Tweet>>) {
         val mainHandler = Handler(Looper.getMainLooper())
-        mainHandler.post({ TweetsCallback(cb).success(Result(tweets, Response.success(tweets))) })
+        mainHandler.post({
+            TweetsCallback(cb).success(Result(tweets, Response.success(tweets)))
+            networkStateRelay.accept(DataLoadingState.SUCCESS)
+        })
     }
 
     private fun decrementMaxId(maxId: Long?): Long? {
@@ -102,7 +109,6 @@ class LocalTweetTimeline(private val userId: Long,
                     } else {
                         dispatchSuccessfulTimelineInMainThread((result.data!!).sortedByDescending { tweet -> tweet.id }, cb)
                     }
-
                 }).start()
             } else {
                 dispatchSuccessfulTimelineInMainThread(localTweets, cb)
@@ -156,9 +162,6 @@ class LocalTweetTimeline(private val userId: Long,
             val minPosition = if (tweets.isNotEmpty()) tweets[tweets.size - 1].getId() else null
             val maxPosition = if (tweets.isNotEmpty()) tweets[0].getId() else null
             val timelineResult = TimelineResult(TimelineCursor(minPosition, maxPosition), tweets)
-            if(tweets.isEmpty()) {
-                networkStateRelay.accept(DataLoadingState.SUCCESS)
-            }
             cb?.success(Result(timelineResult, result.response))
         }
 

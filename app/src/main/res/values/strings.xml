@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">TwitterTestApp</string>
+    <string name="error_loading_tweets">Error loading tweets!</string>
+    <string name="error_publishing_status">Error publishing status!</string>
+    <string name="publish_tweet">PUBLISH</string>
+    <string name="tweet_hint">what\'s happening?</string>
+    <string name="data_empty_placeholder">no tweets yet</string>
 </resources>
