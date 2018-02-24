@@ -19,6 +19,10 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+    dataBinding {
+        enabled = true
+    }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -31,6 +35,8 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+
+    kapt "com.android.databinding:compiler:3.0.1"
 
     //support
     implementation "com.android.support:appcompat-v7:$supportLibVersion"
@@ -46,6 +52,7 @@ dependencies {
     //rx2
     implementation "io.reactivex.rxjava2:rxjava:$rx2Version"
     implementation "io.reactivex.rxjava2:rxandroid:$rx2AndroidVersion"
+    implementation 'com.jakewharton.rxrelay2:rxrelay:2.0.0'
 
     //dagger
     implementation "com.google.dagger:dagger:$daggerVersion"

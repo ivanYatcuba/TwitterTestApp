@@ -14,15 +14,11 @@ import com.twitter.sdk.android.core.Result
 import com.twitter.sdk.android.core.TwitterException
 import com.twitter.sdk.android.core.TwitterSession
 import dagger.android.DaggerFragment
-import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.login_fragment.*
 import javax.inject.Inject
 
 class LoginFragment : DaggerFragment() {
 
-    private val compositeDisposable by lazy { CompositeDisposable() }
-
-    @Inject lateinit var loginViewModel: LoginViewModel
     @Inject lateinit var twitterHelper: TwitterHelper
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {
