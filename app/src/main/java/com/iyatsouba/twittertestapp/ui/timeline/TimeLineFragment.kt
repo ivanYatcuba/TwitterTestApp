@@ -1,10 +1,12 @@
 package com.iyatsouba.twittertestapp.ui.timeline
 
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import com.iyatsouba.twittertestapp.R
 import com.iyatsouba.twittertestapp.ui.publish.PublishStatusFragment
 import com.twitter.sdk.android.core.Callback
@@ -28,12 +30,14 @@ class TimeLineFragment : DaggerFragment() {
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        (activity as AppCompatActivity).findViewById<TextView>(R.id.user_name)
+                ?.text = timeLineViewModel.getUsername()
+
         user_timeline.layoutManager = LinearLayoutManager(activity)
-
-
         val adapter = TweetTimelineRecyclerViewAdapter.Builder(activity)
                 .setTimeline(timeLineViewModel.getTweetTimeline())
-                .setViewStyle(R.style.tw__TweetDarkWithActionsStyle)
+                .setViewStyle(R.style.tw__TweetLightWithActionsStyle)
                 .build()
 
         user_timeline.adapter = adapter

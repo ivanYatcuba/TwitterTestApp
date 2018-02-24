@@ -29,7 +29,8 @@ class LocalTweetTimeline(private val userId: Long,
                 .observeOn(Schedulers.io()))
                 .subscribe({ localTweets ->
                     Log.d("TIMELINE_NEXT", "FOUND LOCAL TWEETS:" + localTweets.size)
-                    val lastMaxTweetId = if (localTweets.isEmpty()) sinceId else localTweets.maxBy { tweet -> tweet.id }?.id
+                    val lastMaxTweetId = if (localTweets.isEmpty())
+                        sinceId else localTweets.maxBy { tweet -> tweet.id }?.id
                     tweetRepository.createUserTimelineRequest(maxItemsPerRequest, lastMaxTweetId, null)
                             ?.enqueue(UserTimelineRequestCallback(localTweets, cb))
                 }, {
@@ -45,8 +46,10 @@ class LocalTweetTimeline(private val userId: Long,
                         .observeOn(Schedulers.io()))
                 .subscribe({ localTweets ->
                         Log.d("TIMELINE_PREV", "FOUND LOCAL TWEETS:" + localTweets.size)
-                        val lastMaxTweetId = if (localTweets.isEmpty()) null else localTweets.maxBy { tweet -> tweet.id }?.id
-                        tweetRepository.createUserTimelineRequest(maxItemsPerRequest, lastMaxTweetId, decrementMaxId(maxId))
+                        val lastMaxTweetId = if (localTweets.isEmpty()) null
+                            else localTweets.maxBy { tweet -> tweet.id }?.id
+                        tweetRepository.createUserTimelineRequest(maxItemsPerRequest,
+                                lastMaxTweetId, decrementMaxId(maxId))
                                 ?.enqueue(UserTimelineRequestCallback(localTweets, cb))
                 }, {
                     Log.d("TIMELINE_PREV", Log.getStackTraceString(it))
@@ -60,7 +63,8 @@ class LocalTweetTimeline(private val userId: Long,
         })
     }
 
-    private fun dispatchSuccessfulTimelineInMainThread(tweets: List<Tweet>, cb: Callback<TimelineResult<Tweet>>) {
+    private fun dispatchSuccessfulTimelineInMainThread(tweets: List<Tweet>,
+                                                       cb: Callback<TimelineResult<Tweet>>) {
         val mainHandler = Handler(Looper.getMainLooper())
         mainHandler.post({ TweetsCallback(cb).success(Result(tweets, Response.success(tweets))) })
     }
