@@ -52,6 +52,7 @@ dependencies {
     //rx2
     implementation "io.reactivex.rxjava2:rxjava:$rx2Version"
     implementation "io.reactivex.rxjava2:rxandroid:$rx2AndroidVersion"
+    implementation 'com.jakewharton.rxrelay2:rxrelay:2.0.0'
 
     //dagger
     implementation "com.google.dagger:dagger:$daggerVersion"
