@@ -74,7 +74,10 @@ class LocalTweetTimeline(internal var userId: Long,
     }
 
     private fun dispatchErrorOnMainThread() {
-        networkStateRelay?.accept(DataLoadingState.ERROR)
+        val mainHandler = Handler(Looper.getMainLooper())
+        mainHandler.post({
+            networkStateRelay?.accept(DataLoadingState.ERROR)
+        })
     }
 
     internal fun dispatchSuccessfulTimelineInMainThread(tweets: List<Tweet>,
