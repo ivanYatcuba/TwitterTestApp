@@ -2,6 +2,7 @@ package com.iyatsouba.twittertestapp.repository
 
 import com.iyatsouba.twittertestapp.db.dao.LocalTweetDao
 import com.iyatsouba.twittertestapp.db.model.LocalTweet
+import com.iyatsouba.twittertestapp.rx.SchedulersFacade
 import com.iyatsouba.twittertestapp.twitter.LocalTweetTimeline
 import com.iyatsouba.twittertestapp.twitter.TwitterHelper
 import com.jakewharton.rxrelay2.BehaviorRelay
@@ -13,13 +14,15 @@ import retrofit2.Response
 import javax.inject.Inject
 
 class TweetRepository @Inject constructor (private val twitterHelper: TwitterHelper,
-                                           private val localTweetDao: LocalTweetDao) {
+                                           private val localTweetDao: LocalTweetDao,
+                                           private val schedulersFacade: SchedulersFacade) {
 
 
     fun getTweetTimeline(): LocalTweetTimeline {
         return LocalTweetTimeline.Builder().userId(twitterHelper.getUserId())
                 .maxItemsPerRequest(5)
                 .tweetRepository(this)
+                .schedulerFacade(schedulersFacade)
                 .build()
     }
 

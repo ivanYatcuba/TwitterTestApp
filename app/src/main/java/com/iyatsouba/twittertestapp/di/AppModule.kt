@@ -6,6 +6,7 @@ import android.content.Context
 import com.iyatsouba.twittertestapp.db.TwitterTestAppDatabse
 import com.iyatsouba.twittertestapp.db.dao.LocalTweetDao
 import com.iyatsouba.twittertestapp.repository.TweetRepository
+import com.iyatsouba.twittertestapp.rx.SchedulersFacade
 import com.iyatsouba.twittertestapp.twitter.TwitterHelper
 import dagger.Module
 import dagger.Provides
@@ -32,8 +33,12 @@ class AppModule {
 
     @Provides
     @Singleton
-    fun providesTweetRepository(twitterHelper: TwitterHelper, localTweetDao: LocalTweetDao)
-            = TweetRepository(twitterHelper, localTweetDao)
+    fun providesSchedulersFacade() = SchedulersFacade()
+
+    @Provides
+    @Singleton
+    fun providesTweetRepository(twitterHelper: TwitterHelper, localTweetDao: LocalTweetDao, schedulersFacade: SchedulersFacade)
+            = TweetRepository(twitterHelper, localTweetDao, schedulersFacade)
 
     @Provides
     @Singleton

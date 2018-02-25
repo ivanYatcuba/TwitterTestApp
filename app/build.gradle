@@ -73,27 +73,23 @@ dependencies {
     }
 
     // Dependencies for local unit tests
-    testCompile "junit:junit:$junitVersion"
-    testCompile "org.mockito:mockito-all:$mockitoVersion"
-    testCompile "org.hamcrest:hamcrest-all:$hamcrestVersion"
-    testCompile "org.powermock:powermock-module-junit4:$powerMockito"
-    testCompile "org.powermock:powermock-api-mockito:$powerMockito"
-
-    // Spek
-    testCompile "org.jetbrains.spek:spek-api:1.1.5"
-    testCompile "org.jetbrains.spek:spek-junit-platform-engine:1.1.5"
-    testCompile "org.junit.platform:junit-platform-runner:1.1.0"
+    testImplementation "junit:junit:$junitVersion"
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "org.hamcrest:hamcrest-all:$hamcrestVersion"
+    testImplementation "org.powermock:powermock-module-junit4:$powerMockito"
+    testImplementation "org.powermock:powermock-api-mockito2:$powerMockito"
+    testImplementation "org.mockito:mockito-inline:2.13.0"
 
     // Kotlin test
-    testCompile "com.natpryce:hamkrest:1.3.0.0"
-    testCompile "com.nhaarman:mockito-kotlin:1.3.0"
+    testImplementation "com.natpryce:hamkrest:1.3.0.0"
+    testImplementation "com.nhaarman:mockito-kotlin:1.5.0"
 
     // Android Testing Support Library's runner and rules
-    androidTestCompile "com.android.support.test:runner:$runnerVersion"
-    androidTestCompile "com.android.support.test:rules:$rulesVersion"
+    androidTestImplementation "com.android.support.test:runner:$runnerVersion"
+    androidTestImplementation "com.android.support.test:rules:$rulesVersion"
 
     // Espresso UI Testing dependencies.
-    androidTestCompile "com.android.support.test.espresso:espresso-core:$espressoVersion"
-    androidTestCompile "com.android.support.test.espresso:espresso-contrib:$espressoVersion"
-    androidTestCompile "com.android.support.test.espresso:espresso-intents:$espressoVersion"
+    androidTestImplementation "com.android.support.test.espresso:espresso-core:$espressoVersion"
+    androidTestImplementation "com.android.support.test.espresso:espresso-contrib:$espressoVersion"
+    androidTestImplementation "com.android.support.test.espresso:espresso-intents:$espressoVersion"
 }

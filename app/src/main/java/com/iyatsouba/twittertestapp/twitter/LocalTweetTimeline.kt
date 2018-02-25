@@ -2,11 +2,11 @@ package com.iyatsouba.twittertestapp.twitter
 
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import com.google.gson.Gson
 import com.iyatsouba.twittertestapp.db.model.LocalTweet
 import com.iyatsouba.twittertestapp.repository.DataLoadingState
 import com.iyatsouba.twittertestapp.repository.TweetRepository
+import com.iyatsouba.twittertestapp.rx.SchedulersFacade
 import com.jakewharton.rxrelay2.BehaviorRelay
 import com.twitter.sdk.android.core.Callback
 import com.twitter.sdk.android.core.Result
@@ -18,12 +18,12 @@ import io.reactivex.Maybe
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
 import io.reactivex.functions.Consumer
-import io.reactivex.schedulers.Schedulers
 import retrofit2.Response
 
-class LocalTweetTimeline(private val userId: Long,
-                         private val maxItemsPerRequest: Int,
-                         private val tweetRepository: TweetRepository) : Timeline<Tweet> {
+class LocalTweetTimeline(internal var userId: Long,
+                         internal var maxItemsPerRequest: Int,
+                         internal var tweetRepository: TweetRepository,
+                         internal var schedulersFacade: SchedulersFacade) : Timeline<Tweet> {
 
     private val networkStateRelay = BehaviorRelay.create<DataLoadingState>()
     private val networkStateRelayObservable = networkStateRelay.share()
@@ -33,13 +33,12 @@ class LocalTweetTimeline(private val userId: Long,
     }
 
     override fun next(sinceId: Long?, cb: Callback<TimelineResult<Tweet>>) {
-        networkStateRelay.accept(DataLoadingState.IN_PROGRESS)
+        networkStateRelay?.accept(DataLoadingState.IN_PROGRESS)
         convertLocalTweetsToNetworkTweets(tweetRepository.getNextTweets(sinceId ?: -1,
                                                                             maxItemsPerRequest)
-                .subscribeOn(Schedulers.io())
-                .observeOn(Schedulers.io()))
+                .subscribeOn(schedulersFacade.io())
+                .observeOn(schedulersFacade.io()))
                 .subscribe({ localTweets ->
-                    Log.d("TIMELINE_NEXT", "FOUND LOCAL TWEETS:" + localTweets.size)
                     val lastMaxTweetId = if (localTweets.isEmpty())
                         sinceId else localTweets.maxBy { tweet -> tweet.id }?.id
                     tweetRepository.createUserTimelineRequest(maxItemsPerRequest, lastMaxTweetId, null)
@@ -51,13 +50,12 @@ class LocalTweetTimeline(private val userId: Long,
     }
 
     override fun previous(maxId: Long?, cb: Callback<TimelineResult<Tweet>>) {
-        networkStateRelay.accept(DataLoadingState.IN_PROGRESS)
+        networkStateRelay?.accept(DataLoadingState.IN_PROGRESS)
         convertLocalTweetsToNetworkTweets(
                 tweetRepository.getPreviousTweets(maxId ?: Long.MAX_VALUE, maxItemsPerRequest)
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(Schedulers.io()))
+                        .subscribeOn(schedulersFacade.io())
+                        .observeOn(schedulersFacade.io()))
                         .subscribe({ localTweets ->
-                            Log.d("TIMELINE_PREV", "FOUND LOCAL TWEETS:" + localTweets.size)
                             val lastMaxTweetId = if (localTweets.isEmpty()) null
                                 else localTweets.maxBy { tweet -> tweet.id }?.id
                             tweetRepository.createUserTimelineRequest(maxItemsPerRequest,
@@ -76,15 +74,15 @@ class LocalTweetTimeline(private val userId: Long,
     }
 
     private fun dispatchErrorOnMainThread() {
-        networkStateRelay.accept(DataLoadingState.ERROR)
+        networkStateRelay?.accept(DataLoadingState.ERROR)
     }
 
-    private fun dispatchSuccessfulTimelineInMainThread(tweets: List<Tweet>,
+    internal fun dispatchSuccessfulTimelineInMainThread(tweets: List<Tweet>,
                                                        cb: Callback<TimelineResult<Tweet>>) {
         val mainHandler = Handler(Looper.getMainLooper())
         mainHandler.post({
             TweetsCallback(cb).success(Result(tweets, Response.success(tweets)))
-            networkStateRelay.accept(DataLoadingState.SUCCESS)
+            networkStateRelay?.accept(DataLoadingState.SUCCESS)
         })
     }
 
@@ -98,7 +96,6 @@ class LocalTweetTimeline(private val userId: Long,
 
         override fun success(result: Result<MutableList<Tweet>>?) {
             if (result?.data != null) {
-                Log.e("TIMELINE", "FOUND NET TWEETS:" + result.data.size)
                 Thread({
                     result.data.forEach({
                         val localTweet = LocalTweet(userId, it.id, Gson().toJson(it))
@@ -116,7 +113,6 @@ class LocalTweetTimeline(private val userId: Long,
         }
 
         override fun failure(exception: TwitterException?) {
-            Log.e("TIMELINE", Log.getStackTraceString(exception))
             dispatchSuccessfulTimelineInMainThread(localTweets, cb)
         }
     }
@@ -126,6 +122,7 @@ class LocalTweetTimeline(private val userId: Long,
         private var userId: Long? = null
         private var maxItemsPerRequest: Int? = 20
         private var tweetRepository: TweetRepository? = null
+        private var schedulersFacade: SchedulersFacade? = null
 
         fun userId(userId: Long?): Builder {
             this.userId = userId
@@ -142,8 +139,13 @@ class LocalTweetTimeline(private val userId: Long,
             return this
         }
 
+        fun schedulerFacade(schedulersFacade: SchedulersFacade?): Builder {
+            this.schedulersFacade = schedulersFacade
+            return this
+        }
+
         fun build(): LocalTweetTimeline {
-            return LocalTweetTimeline(userId!!,  maxItemsPerRequest!!, tweetRepository!!)
+            return LocalTweetTimeline(userId!!,  maxItemsPerRequest!!, tweetRepository!!, schedulersFacade!!)
         }
     }
 
